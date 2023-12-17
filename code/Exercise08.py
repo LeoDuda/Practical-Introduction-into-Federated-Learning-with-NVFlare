@@ -28,7 +28,7 @@ print(PIL.__version__)
 do_training = True
 
 #img_dir = os.path.realpath('dataset')  # path of image directory
-DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
+DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/code/dataset"
 img_dir = DATASET_PATH
 images = os.listdir(img_dir)
 
