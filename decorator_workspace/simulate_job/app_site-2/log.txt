@@ -1,0 +1,30 @@
+2023-12-18 21:28:04,416 - ClientTaskWorker - INFO - ClientTaskWorker started to run
+2023-12-18 21:28:04,453 - CoreCell - INFO - site-2.simulate_job: created backbone external connector to tcp://localhost:56860
+2023-12-18 21:28:04,453 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connector [CH00001 ACTIVE tcp://localhost:56860] is starting
+2023-12-18 21:28:04,454 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00002 127.0.0.1:56874 => 127.0.0.1:56860] is created: PID: 12180
+2023-12-18 21:28:06,200 - Cell - INFO - Register blob CB for channel='aux_communication', topic='*'
+2023-12-18 21:28:06,709 - Cell - INFO - broadcast: channel='aux_communication', topic='__sync_runner__', targets=['server.simulate_job'], timeout=2.0
+2023-12-18 21:28:06,721 - ClientRunner - INFO - [identity=site-2, run=simulate_job]: synced to Server Runner in 0.5183439254760742 seconds
+2023-12-18 21:28:06,746 - ClientRunner - INFO - [identity=site-2, run=simulate_job]: client runner started
+2023-12-18 21:28:06,747 - ClientTaskWorker - INFO - Initialize ClientRunner for client: site-2
+2023-12-18 21:28:06,783 - Communicator - INFO - Received from simulator_server server. getTask: train size: 14.8MB (14752875 Bytes) time: 0.035782 seconds
+2023-12-18 21:28:06,783 - FederatedClient - INFO - pull_task completed. Task name:train Status:True 
+2023-12-18 21:28:06,783 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job]: got task assignment: name=train, id=56c29097-2045-46ac-baf4-5c8e00585dea
+2023-12-18 21:28:06,783 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: invoking task executor PTClientAPILauncherExecutor
+2023-12-18 21:28:06,783 - PTClientAPILauncherExecutor - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: execute for task (train)
+2023-12-18 21:28:06,784 - PTClientAPILauncherExecutor - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: External execution for task (train) is launched.
+2023-12-18 21:28:10,564 - PTClientAPILauncherExecutor - INFO - [identity=site-2, run=simulate_job]: launcher completed train with status failed at time 1702931290.564821
+2023-12-18 21:28:15,567 - PTClientAPILauncherExecutor - ERROR - [identity=site-2, run=simulate_job]: Launcher already exited with status failed at time 1702931290.564821 and LauncherExecutor does not receive the last result within 5.0 seconds.
+2023-12-18 21:28:15,916 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: try #1: sending task result to server
+2023-12-18 21:28:15,916 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: checking task ...
+2023-12-18 21:28:15,916 - Cell - INFO - broadcast: channel='aux_communication', topic='__task_check__', targets=['server.simulate_job'], timeout=5.0
+2023-12-18 21:28:15,922 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: start to send task result to server
+2023-12-18 21:28:15,922 - FederatedClient - INFO - Starting to push execute result.
+2023-12-18 21:28:15,927 - Communicator - INFO -  SubmitUpdate size: 560B (560 Bytes). time: 0.005327 seconds
+2023-12-18 21:28:15,928 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job, task_name=train, task_id=56c29097-2045-46ac-baf4-5c8e00585dea]: task result sent to server
+2023-12-18 21:28:15,928 - ClientTaskWorker - INFO - Finished one task run for client: site-2 interval: 2 task_processed: True
+2023-12-18 21:28:17,941 - FederatedClient - INFO - pull_task completed. Task name:__end_run__ Status:True 
+2023-12-18 21:28:17,941 - ClientRunner - INFO - [identity=site-2, run=simulate_job, peer=simulator_server, peer_run=simulate_job]: server asked to end the run
+2023-12-18 21:28:17,942 - ClientTaskWorker - INFO - End the Simulator run.
+2023-12-18 21:28:17,942 - ClientTaskWorker - INFO - Clean up ClientRunner for : site-2 
+2023-12-18 21:28:17,944 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00002 Not Connected] is closed PID: 12180
