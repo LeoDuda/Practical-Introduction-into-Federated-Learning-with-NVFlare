@@ -32,6 +32,9 @@ DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/code/dataset"
 img_dir = DATASET_PATH
 images = os.listdir(img_dir)
 
+PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/TumorNet.pth"
+
+
 
 # implement tumor_df as pd.DataFrame for train/test split and further data process
 tumor_df = None
@@ -91,17 +94,6 @@ def main():
     image_datasets = {'train': train_data, 'test': test_data}
     image_dataloaders = {'train': train_dataloader, 'test': test_dataloader}
 
-    feat, labels = next(iter(train_dataloader))
-    assert feat.shape[2] == 244 and feat.shape[3] == 244, "Wrong size, please check image_transform"
-
-    # plot a batch (32) of image in training set
-    train_features, train_labels = next(iter(train_dataloader))  # DataLoader is iterable
-    fig, axes = plt.subplots(4, 8, figsize=(40, 20), gridspec_kw=dict(hspace=0.1, wspace=0.3))
-    for i, ax in enumerate(axes.flat):
-        ax.imshow(train_features[i].numpy().transpose((1, 2, 0)))
-        ax.set_title('Cancer' if int(train_labels[i] == 1) else 'Not Cancer')
-
-
 
 
 
@@ -127,161 +119,121 @@ def main():
 
     net = TumorNet()
 
+
     flare.init()
 
-    while flare.is_running():
-        # (3) receives FLModel from NVFlare
-        input_model = flare.receive()
-        print(f"current_round={input_model.current_round}")
+
+    @flare.train
+    def train(input_model, loss_func, optimizer, epochs, image_datasets, image_dataloaders, do_training=True):
+        """Return the trained model and train/test accuracy/loss"""
+        
 
         net.load_state_dict(input_model.params)
 
+        net.to(device)
+
+        for e in range(1, epochs + 1):
+            print('Epoch {}/{}'.format(e, epochs))
+            for phase in ['train', 'test']:
+                if phase == 'train':
+                    input_model.train()  # set model to training mode for training phase
+                else:
+                    input_model.eval()  # set model to evaluation mode for test phase
+
+                running_loss = 0.0  # record the training/test loss for each epoch
+                running_corrects = 0  # record the number of correct predicts by the model for each epoch
+
+                for features, labels in image_dataloaders[phase]:
+                    # send data to gpu if possible
+                    features = features.to(device)
+                    labels = labels.to(device)
+
+                    # reset the parameter gradients after each batch to avoid double-counting
+                    optimizer.zero_grad()
+
+                    # forward pass
+                    # set parameters to be trainable only at training phase
+                    with torch.set_grad_enabled(phase == 'train'):
+                        outcomes = input_model(features)
+                        pred_labels = outcomes.round()  # round up forward outcomes to get predicted labels
+                        labels = labels.unsqueeze(1).type(torch.float)
+                        loss = loss_func(outcomes, labels)  # calculate loss
+
+                        # backpropagation only for training phase
+                        if phase == 'train':
+                            loss.backward()
+                            optimizer.step()
+
+                    # record loss and correct predicts of each bach
+                    running_loss += loss.item() * features.size(0)
+                    running_corrects += torch.sum(pred_labels == labels.data)
+
+                # record loss and correct predicts of each epoch and stored in history
+                epoch_loss = running_loss / len(image_datasets[phase])
+                epoch_acc = running_corrects.double() / len(image_datasets[phase])
+
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+                history[phase + '_loss'].append(epoch_loss)
+                history[phase + '_acc'].append(epoch_acc)
+                torch.save(input_model.state_dict(), PATH)
 
 
-        cnn_model = net.to(device)
-        
-        steps = 15 * len(train_dataloader)
-
-        summary(cnn_model)
-
-
-
-        def train_model(model, loss_func, optimizer, epochs, image_datasets, image_dataloaders, do_training=True):
-            """Return the trained model and train/test accuracy/loss"""
-            if not do_training:
-                return None, None
-            history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}
-            for e in range(1, epochs + 1):
-                print('Epoch {}/{}'.format(e, epochs))
-                for phase in ['train', 'test']:
-                    if phase == 'train':
-                        model.train()  # set model to training mode for training phase
-                    else:
-                        model.eval()  # set model to evaluation mode for test phase
-
-                    running_loss = 0.0  # record the training/test loss for each epoch
-                    running_corrects = 0  # record the number of correct predicts by the model for each epoch
-
-                    for features, labels in image_dataloaders[phase]:
-                        # send data to gpu if possible
-                        features = features.to(device)
-                        labels = labels.to(device)
-
-                        # reset the parameter gradients after each batch to avoid double-counting
-                        optimizer.zero_grad()
-
-                        # forward pass
-                        # set parameters to be trainable only at training phase
-                        with torch.set_grad_enabled(phase == 'train'):
-                            outcomes = model(features)
-                            pred_labels = outcomes.round()  # round up forward outcomes to get predicted labels
-                            labels = labels.unsqueeze(1).type(torch.float)
-                            loss = loss_func(outcomes, labels)  # calculate loss
-
-                            # backpropagation only for training phase
-                            if phase == 'train':
-                                loss.backward()
-                                optimizer.step()
-
-                        # record loss and correct predicts of each bach
-                        running_loss += loss.item() * features.size(0)
-                        running_corrects += torch.sum(pred_labels == labels.data)
-
-                    # record loss and correct predicts of each epoch and stored in history
-                    epoch_loss = running_loss / len(image_datasets[phase])
-                    epoch_acc = running_corrects.double() / len(image_datasets[phase])
-
-                    print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
-                    history[phase + '_loss'].append(epoch_loss)
-                    history[phase + '_acc'].append(epoch_acc)
-
-            return model, history
-        
-        def evaluate(input_weights):
-            net = TumorNet()
-            net.load_state_dict(input_weights)
-            # (optional) use GPU to speed things up
-            net.to(device)
-
-            correct = 0
-            total = 0
-            # since we're not training, we don't need to calculate the gradients for our outputs
-            with torch.no_grad():
-                for data in test_dataloader:
-                    # (optional) use GPU to speed things up
-                    images, labels = data[0].to(device), data[1].to(device)
-                    # calculate outputs by running images through the network
-                    outputs = net(images)
-                    # the class with the highest energy is what we choose as prediction
-                    _, predicted = torch.max(outputs.data, 1)
-                    total += labels.size(0)
-                    correct += (predicted == labels).sum().item()
-
-            print(f"Accuracy of the network on the 480 test images: {100 * correct // total} %")
-            return 100 * correct // total
-        
-        accuracy = evaluate(input_model.params)
-
-        output_model = flare.FLModel(
-            params=net.cpu().state_dict(),
-            metrics={"accuracy": accuracy},
-            meta={"NUM_STEPS_CURRENT_ROUND": steps},
-        )
-        # (8) send model back to NVFlare
-        flare.send(output_model)
+        output_model = flare.FLModel(params=net.cpu().state_dict(), meta={"NUM_STEPS_CURRENT_ROUND": 15})
+        return output_model
         
 
+    @flare.evaluate
+    def fl_evaluate(model=None):
+        return evaluate(input_weights=model.params)
+    
+    def evaluate(input_weights):
 
-    cnn_model_trained, cnn_history = train_model(
-        model=cnn_model,
+        net.load_state_dict(input_weights)
+        # (optional) use GPU to speed things up
+        net.to(device)
+
+        correct = 0
+        total = 0
+        # since we're not training, we don't need to calculate the gradients for our outputs
+        with torch.no_grad():
+            for data in test_dataloader:
+                # (optional) use GPU to speed things up
+                images, labels = data[0].to(device), data[1].to(device)
+                # calculate outputs by running images through the network
+                outputs = net(images)
+                # the class with the highest energy is what we choose as prediction
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        print(f"Accuracy of the network on the 480 test images: {100 * correct // total} %")
+        return 100 * correct // total
+    
+ 
+
+    while flare.is_running():
+        # (6) receives FLModel from NVFlare
+        input_model = flare.receive()
+        print(f"current_round={input_model.current_round}")
+
+        # (7) call fl_evaluate method before training
+        #       to evaluate on the received/aggregated model
+        global_metric = fl_evaluate(input_model)
+        print(f"Accuracy of the global model on the 480 test images: {global_metric} %")
+        # call train method
+        train(
+        input_model,
         loss_func=nn.BCELoss(),
-        optimizer=optim.Adam(cnn_model.parameters(), lr=0.001),
+        optimizer=optim.Adam(net.parameters(), lr=0.001),
         epochs=15,
         image_datasets=image_datasets,
         image_dataloaders=image_dataloaders,
         do_training=do_training
-    )
-
-    # Now we plot the training curve to visualize the loss and accuracy vs. epoch for both training and test process.
-    # Note that the hyperparameters of this model are not optimized yet. Feel free to give a try on hyperparameter optimization for better result. But please do it in another notebook.
-
-    # %% deletable=false editable=false nbgrader={"cell_type": "code", "checksum": "bb83d934dea56ded02b81f75e4cb2bfb", "grade": false, "grade_id": "cell-411c156c6b081bdf", "locked": true, "schema_version": 3, "solution": false, "task": false}
-    def plot_training_curve(history):
-        """Plot the training curve"""
-        train_loss = history['train_loss']
-        test_loss = history['test_loss']
-        train_acc = history['train_acc']
-        test_acc = history['test_acc']
-
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 5))
-        ax1.plot(list(range(1, len(train_loss) + 1)), train_loss, label='Training', color='c')
-        ax1.plot(list(range(1, len(train_loss) + 1)), test_loss, label='Test', color='b')
-        x_major_locator = MultipleLocator(1)
-        ax1.set_xlim(1, len(train_loss))
-        ax1.xaxis.set_major_locator(x_major_locator)
-        ax1.set_xlabel('Eopchs')
-        ax1.set_ylabel('Binary Cross Entropy Loss')
-        ax1.legend(loc='upper right', fontsize='x-large')
-        ax1.set_title('Loss vs. Epochs')
-
-        ax2.plot(np.arange(1, len(train_acc) + 1), train_acc, label='Training', color='c')
-        ax2.plot(np.arange(1, len(train_acc) + 1), test_acc, label='Test', color='b')
-        x_major_locator = MultipleLocator(1)
-        ax2.set_xlim(1, len(train_acc))
-        ax2.xaxis.set_major_locator(x_major_locator)
-        ax2.set_xlabel('Eopchs')
-        ax2.set_ylabel('Accuracy')
-        ax2.legend(loc='lower right', fontsize='x-large')
-        ax2.set_title('Accuracy vs. Epochs')
-
-        plt.show()
-        plt.close()
-
-
-    try:
-        plot_training_curve(cnn_history)
-    except:
-        pass
+        )
+        # call evaluate method
+        metric = evaluate(input_weights=torch.load(PATH))
+        print(f"Accuracy of the trained model on the 10000 test images: {metric} %")
+    
 
 if __name__ == "__main__":
     main()
