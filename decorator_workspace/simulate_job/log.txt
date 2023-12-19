@@ -1,0 +1,107 @@
+2023-12-19 13:26:53,034 - SimulatorRunner - INFO - Create the Simulator Server.
+2023-12-19 13:26:53,035 - CoreCell - INFO - server: creating listener on tcp://0:52294
+2023-12-19 13:26:53,053 - CoreCell - INFO - server: created backbone external listener for tcp://0:52294
+2023-12-19 13:26:53,053 - ConnectorManager - INFO - 8424: Try start_listener Listener resources: {'secure': False, 'host': 'localhost'}
+2023-12-19 13:26:53,054 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connector [CH00002 PASSIVE tcp://0:12290] is starting
+2023-12-19 13:26:53,559 - CoreCell - INFO - server: created backbone internal listener for tcp://localhost:12290
+2023-12-19 13:26:53,560 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connector [CH00001 PASSIVE tcp://0:52294] is starting
+2023-12-19 13:26:53,640 - nvflare.fuel.hci.server.hci - INFO - Starting Admin Server localhost on Port 52295
+2023-12-19 13:26:53,640 - SimulatorRunner - INFO - Deploy the Apps.
+2023-12-19 13:26:53,647 - SimulatorRunner - INFO - Create the simulate clients.
+2023-12-19 13:26:53,649 - ClientManager - INFO - Client: New client site-1@10.15.0.106 joined. Sent token: ed306341-233e-4037-bf84-9b28e06455e1.  Total clients: 1
+2023-12-19 13:26:53,649 - FederatedClient - INFO - Successfully registered client:site-1 for project simulator_server. Token:ed306341-233e-4037-bf84-9b28e06455e1 SSID:
+2023-12-19 13:26:53,650 - ClientManager - INFO - Client: New client site-2@10.15.0.106 joined. Sent token: 750332c6-7612-42fc-9fcf-809dcec41ac5.  Total clients: 2
+2023-12-19 13:26:53,650 - FederatedClient - INFO - Successfully registered client:site-2 for project simulator_server. Token:750332c6-7612-42fc-9fcf-809dcec41ac5 SSID:
+2023-12-19 13:26:53,650 - SimulatorRunner - INFO - Set the client status ready.
+2023-12-19 13:26:53,650 - SimulatorRunner - INFO - Deploy and start the Server App.
+2023-12-19 13:26:53,650 - Cell - INFO - Register blob CB for channel='server_command', topic='*'
+2023-12-19 13:26:53,651 - Cell - INFO - Register blob CB for channel='aux_communication', topic='*'
+2023-12-19 13:26:53,651 - ServerCommandAgent - INFO - ServerCommandAgent cell register_request_cb: server.simulate_job
+2023-12-19 13:26:55,328 - IntimeModelSelector - INFO - model selection weights control: None
+2023-12-19 13:26:55,328 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job]: Server runner starting ...
+2023-12-19 13:26:55,328 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job]: starting workflow scatter_and_gather (<class 'nvflare.app_common.workflows.scatter_and_gather.ScatterAndGather'>) ...
+2023-12-19 13:26:55,328 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Initializing ScatterAndGather workflow.
+2023-12-19 13:26:55,328 - PTFileModelPersistor - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Both source_ckpt_file_full_name and ckpt_preload_path are not provided. Using the default model weights initialized on the persistor side.
+2023-12-19 13:26:55,329 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Workflow scatter_and_gather (<class 'nvflare.app_common.workflows.scatter_and_gather.ScatterAndGather'>) started
+2023-12-19 13:26:55,329 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Beginning ScatterAndGather training phase.
+2023-12-19 13:26:55,329 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Round 0 started.
+2023-12-19 13:26:55,329 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: scheduled task train
+2023-12-19 13:26:55,667 - SimulatorClientRunner - INFO - Start the clients run simulation.
+2023-12-19 13:26:56,671 - SimulatorClientRunner - INFO - Simulate Run client: site-1 on GPU group: None
+2023-12-19 13:26:56,681 - SimulatorClientRunner - INFO - Simulate Run client: site-2 on GPU group: None
+2023-12-19 13:26:57,733 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00005 127.0.0.1:52294 <= 127.0.0.1:52307] is created: PID: 8424
+2023-12-19 13:26:57,733 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00006 127.0.0.1:52294 <= 127.0.0.1:52308] is created: PID: 8424
+2023-12-19 13:27:00,045 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, task_name=train, task_id=36bc73c3-edfd-4378-b6cb-4335d971dd25]: assigned task to client site-1: name=train, id=36bc73c3-edfd-4378-b6cb-4335d971dd25
+2023-12-19 13:27:00,046 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, task_name=train, task_id=36bc73c3-edfd-4378-b6cb-4335d971dd25]: sent task assignment to client. client_name:site-1 task_id:36bc73c3-edfd-4378-b6cb-4335d971dd25
+2023-12-19 13:27:00,046 - GetTaskCommand - INFO - return task to client.  client_name: site-1  task_name: train   task_id: 36bc73c3-edfd-4378-b6cb-4335d971dd25  sharable_header_task_id: 36bc73c3-edfd-4378-b6cb-4335d971dd25
+2023-12-19 13:27:00,046 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, task_name=train, task_id=210f768f-5f95-49a5-a436-77b0b27cc160]: assigned task to client site-2: name=train, id=210f768f-5f95-49a5-a436-77b0b27cc160
+2023-12-19 13:27:00,051 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, task_name=train, task_id=210f768f-5f95-49a5-a436-77b0b27cc160]: sent task assignment to client. client_name:site-2 task_id:210f768f-5f95-49a5-a436-77b0b27cc160
+2023-12-19 13:27:00,051 - GetTaskCommand - INFO - return task to client.  client_name: site-2  task_name: train   task_id: 210f768f-5f95-49a5-a436-77b0b27cc160  sharable_header_task_id: 210f768f-5f95-49a5-a436-77b0b27cc160
+2023-12-19 13:28:02,419 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job]: got result from client site-2 for task: name=train, id=210f768f-5f95-49a5-a436-77b0b27cc160
+2023-12-19 13:28:02,420 - DXOAggregator - WARNING - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=210f768f-5f95-49a5-a436-77b0b27cc160]: Aggregation_weight missing for site-2 and set to default value, 1.0 This kind of message will show 10 times at most.
+2023-12-19 13:28:02,422 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=210f768f-5f95-49a5-a436-77b0b27cc160]: Contribution from site-2 ACCEPTED by the aggregator at round 0.
+2023-12-19 13:28:02,422 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=210f768f-5f95-49a5-a436-77b0b27cc160]: finished processing client result by scatter_and_gather
+2023-12-19 13:28:02,422 - SubmitUpdateCommand - INFO - submit_update process. client_name:site-2   task_id:210f768f-5f95-49a5-a436-77b0b27cc160
+2023-12-19 13:28:05,956 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job]: got result from client site-1 for task: name=train, id=36bc73c3-edfd-4378-b6cb-4335d971dd25
+2023-12-19 13:28:05,956 - DXOAggregator - WARNING - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=36bc73c3-edfd-4378-b6cb-4335d971dd25]: Aggregation_weight missing for site-1 and set to default value, 1.0 This kind of message will show 10 times at most.
+2023-12-19 13:28:05,958 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=36bc73c3-edfd-4378-b6cb-4335d971dd25]: Contribution from site-1 ACCEPTED by the aggregator at round 0.
+2023-12-19 13:28:05,959 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=36bc73c3-edfd-4378-b6cb-4335d971dd25]: finished processing client result by scatter_and_gather
+2023-12-19 13:28:05,959 - SubmitUpdateCommand - INFO - submit_update process. client_name:site-1   task_id:36bc73c3-edfd-4378-b6cb-4335d971dd25
+2023-12-19 13:28:06,234 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: task train exit with status TaskCompletionStatus.OK
+2023-12-19 13:28:06,732 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Start aggregation.
+2023-12-19 13:28:06,734 - DXOAggregator - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: aggregating 2 update(s) at round 0
+2023-12-19 13:28:06,741 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: End aggregation.
+2023-12-19 13:28:06,749 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Start persist model on server.
+2023-12-19 13:28:06,798 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: End persist model on server.
+2023-12-19 13:28:06,798 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Round 0 finished.
+2023-12-19 13:28:06,798 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Round 1 started.
+2023-12-19 13:28:06,798 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: scheduled task train
+2023-12-19 13:28:07,453 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: assigned task to client site-2: name=train, id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5
+2023-12-19 13:28:07,453 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: sent task assignment to client. client_name:site-2 task_id:225f82c5-6bc7-4a08-9a9a-05bd940d0cb5
+2023-12-19 13:28:07,454 - GetTaskCommand - INFO - return task to client.  client_name: site-2  task_name: train   task_id: 225f82c5-6bc7-4a08-9a9a-05bd940d0cb5  sharable_header_task_id: 225f82c5-6bc7-4a08-9a9a-05bd940d0cb5
+2023-12-19 13:28:07,973 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: assigned task to client site-1: name=train, id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8
+2023-12-19 13:28:07,974 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: sent task assignment to client. client_name:site-1 task_id:88eb8c41-3466-4b92-9b42-5a7ec78e4bd8
+2023-12-19 13:28:07,974 - GetTaskCommand - INFO - return task to client.  client_name: site-1  task_name: train   task_id: 88eb8c41-3466-4b92-9b42-5a7ec78e4bd8  sharable_header_task_id: 88eb8c41-3466-4b92-9b42-5a7ec78e4bd8
+2023-12-19 13:29:07,315 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job]: got result from client site-2 for task: name=train, id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5
+2023-12-19 13:29:07,316 - IntimeModelSelector - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: validation metric 47 from client site-2
+2023-12-19 13:29:07,316 - DXOAggregator - WARNING - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: Aggregation_weight missing for site-2 and set to default value, 1.0 This kind of message will show 10 times at most.
+2023-12-19 13:29:07,318 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: Contribution from site-2 ACCEPTED by the aggregator at round 1.
+2023-12-19 13:29:07,318 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=225f82c5-6bc7-4a08-9a9a-05bd940d0cb5]: finished processing client result by scatter_and_gather
+2023-12-19 13:29:07,318 - SubmitUpdateCommand - INFO - submit_update process. client_name:site-2   task_id:225f82c5-6bc7-4a08-9a9a-05bd940d0cb5
+2023-12-19 13:29:10,352 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job]: got result from client site-1 for task: name=train, id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8
+2023-12-19 13:29:10,352 - IntimeModelSelector - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: validation metric 47 from client site-1
+2023-12-19 13:29:10,352 - DXOAggregator - WARNING - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: Aggregation_weight missing for site-1 and set to default value, 1.0 This kind of message will show 10 times at most.
+2023-12-19 13:29:10,355 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: Contribution from site-1 ACCEPTED by the aggregator at round 1.
+2023-12-19 13:29:10,356 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job, peer_rc=OK, task_name=train, task_id=88eb8c41-3466-4b92-9b42-5a7ec78e4bd8]: finished processing client result by scatter_and_gather
+2023-12-19 13:29:10,356 - SubmitUpdateCommand - INFO - submit_update process. client_name:site-1   task_id:88eb8c41-3466-4b92-9b42-5a7ec78e4bd8
+2023-12-19 13:29:10,599 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: task train exit with status TaskCompletionStatus.OK
+2023-12-19 13:29:10,643 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Start aggregation.
+2023-12-19 13:29:10,643 - IntimeModelSelector - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: new best validation metric at round 1: 47.0
+2023-12-19 13:29:10,679 - DXOAggregator - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: aggregating 2 update(s) at round 1
+2023-12-19 13:29:10,682 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: End aggregation.
+2023-12-19 13:29:10,684 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Start persist model on server.
+2023-12-19 13:29:10,713 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: End persist model on server.
+2023-12-19 13:29:10,713 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Round 1 finished.
+2023-12-19 13:29:10,713 - ScatterAndGather - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Finished ScatterAndGather Training.
+2023-12-19 13:29:10,713 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Workflow: scatter_and_gather finalizing ...
+2023-12-19 13:29:11,105 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: ABOUT_TO_END_RUN fired
+2023-12-19 13:29:11,105 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Firing CHECK_END_RUN_READINESS ...
+2023-12-19 13:29:11,105 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: END_RUN fired
+2023-12-19 13:29:11,105 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: Server runner finished.
+2023-12-19 13:29:12,349 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-2, peer_run=simulate_job]: server runner is finalizing - asked client to end the run
+2023-12-19 13:29:12,349 - GetTaskCommand - INFO - return task to client.  client_name: site-2  task_name: __end_run__   task_id:   sharable_header_task_id: 
+2023-12-19 13:29:12,354 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00005 Not Connected] is closed PID: 8424
+2023-12-19 13:29:12,362 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather, peer=site-1, peer_run=simulate_job]: server runner is finalizing - asked client to end the run
+2023-12-19 13:29:12,363 - GetTaskCommand - INFO - return task to client.  client_name: site-1  task_name: __end_run__   task_id:   sharable_header_task_id: 
+2023-12-19 13:29:12,365 - FederatedClient - INFO - Shutting down client run: site-1
+2023-12-19 13:29:12,366 - FederatedClient - INFO - Shutting down client run: site-2
+2023-12-19 13:29:12,366 - ServerRunner - INFO - [identity=simulator_server, run=simulate_job, wf=scatter_and_gather]: asked to abort - triggered abort_signal to stop the RUN
+2023-12-19 13:29:12,367 - nvflare.fuel.f3.sfm.conn_manager - INFO - Connection [CN00006 Not Connected] is closed PID: 8424
+2023-12-19 13:29:13,459 - SimulatorServer - INFO - Server app stopped.
+
+
+2023-12-19 13:29:13,926 - nvflare.fuel.hci.server.hci - INFO - Admin Server localhost on Port 52295 shutdown!
+2023-12-19 13:29:13,927 - SimulatorServer - INFO - shutting down server
+2023-12-19 13:29:13,928 - SimulatorServer - INFO - canceling sync locks
+2023-12-19 13:29:13,928 - SimulatorServer - INFO - server off
+2023-12-19 13:29:17,330 - MPM - INFO - MPM: Good Bye!
