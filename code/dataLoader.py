@@ -3,9 +3,11 @@ import json
 import numpy as np
 import pandas as pd
 from PIL import Image
+from torch.utils.data import Dataset, DataLoader
 
 
-class dataLoader():
+
+""" class dataLoader():
 
     #for testing purposes
     json_dir = os.path.realpath('json')  # path of image directory
@@ -50,9 +52,32 @@ class dataLoader():
         print(len(tumor_df))
         print(data_index[client_id]["end"] - data_index[client_id]["start"])
 
+    ##load_data(data, "site1")
+    ##load_data(data, "site2") """
+
+class TumorImageDataset(Dataset):
+        """load, transform and return image and label"""
+
+        def __init__(self, annotations_df, img_dir, transform=None):
+            self.img_labels = annotations_df
+            self.img_dir = img_dir
+            self.transform = transform
+
+        def __len__(self):
+            return len(self.img_labels)
+
+        def __getitem__(self, idx):
+            # get image path according to idx
+            img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+            # convert all image to RGB format
+            image = Image.open(img_path).convert('RGB')
+            label = self.img_labels.iloc[idx, 1]
+            # apply image transform
+            if self.transform:
+                image = self.transform(image)
+            return [image, label]
+
 
 
 
         
-    load_data(data, "site1")
-    load_data(data, "site2")
