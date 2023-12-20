@@ -26,16 +26,6 @@ def getSize(PATH):
             count += 1
     return count
 
-
-data_path = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
-site_num = 2
-site_name_prefix = "site-"
-size_total = getSize(data_path)#
-size_valid = round(0.2 * size_total)
-split_method = "uniform"
-out_path = "../output"
-
-
 def data_split_args_parser():
     parser = argparse.ArgumentParser(description="Generate data split for dataset")
     parser.add_argument("--data_path", type=str, help="Path to data file")
@@ -79,7 +69,9 @@ def split_num_proportion(n, site_num, option: str):
     return split
 
 
-def main():
+
+
+def createSplit(data_path, site_num, site_name_prefix, size_total, size_valid, split_method, out_path):
     #parser = data_split_args_parser()
     #args = parser.parse_args()
 
@@ -101,5 +93,15 @@ def main():
             json.dump(json_data, f, indent=4)
 
 
-if __name__ == "__main__":
-    main()
+PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
+
+
+
+createSplit(data_path = PATH,
+            site_num = 2,
+            site_name_prefix = "site-",
+            size_total = getSize(PATH),
+            size_valid = round(0.2 * getSize(PATH)),
+            split_method = "uniform",
+            out_path = "../output"
+            )
