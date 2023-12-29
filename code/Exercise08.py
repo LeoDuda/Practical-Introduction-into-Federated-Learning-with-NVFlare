@@ -1,6 +1,7 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,7 +19,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from net import TumorNet
-from dataLoader import TumorImageDataset
+from dataLoader import TumorImageDataset, dataLoader
+from prepare_data_split import createSplit
 import nvflare.client as flare
 
 
@@ -31,21 +33,40 @@ DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
 img_dir = DATASET_PATH
 images = os.listdir(img_dir)
 
-PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/TumorNet.pth"
+NET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/TumorNet.pth"
+OUTPUT_PATH = "../output"
 
 
 
 # implement tumor_df as pd.DataFrame for train/test split and further data process
-tumor_df = None
+"""tumor_df = None
 img_names, img_labels = zip(*[(i, 0 if 'Not Cancer' in i else 1) for i in images])
 names = pd.Series(img_names, name='name')
 labels = pd.Series(img_labels, name='label')
-tumor_df = pd.concat([names,labels],axis=1)
+tumor_df = pd.concat([names,labels],axis=1)"""
 
 def main():
+    #create json file of the data split and save it within OUTPUT_PATH
+    jsonSplit = createSplit(data_path = DATASET_PATH,
+            site_num = 2,
+            site_name_prefix = "site-",
+            split_method = "uniform",
+            out_path = OUTPUT_PATH
+            )
+    
+
+    net = TumorNet()
+
+    flare.init()
+    client_id = flare.get_site_name() 
+
+    splitted_data = dataLoader.load_data(jsonSplit, client_id)
+    
+    tumor_df_split = splitted_data[0]
+    valid_set = splitted_data[1]
 
     # training set/test set split
-    train_set, test_set = train_test_split(tumor_df, train_size=0.8, test_size=0.2, random_state=0)
+    train_set, test_set = train_test_split(tumor_df_split, train_size=0.8, test_size=0.2, random_state=0)
 
 
     # here we resize and cut the center of each image to obtain a dataset with uniform size
@@ -55,21 +76,22 @@ def main():
         transforms.ToTensor()
     ])
 
-    # implement Dataset and DataLoader for training
+    
+    
+    # implement Dataset and DataLoader for training, testing and validation
     train_data = TumorImageDataset(train_set, img_dir, image_transform)
     train_dataloader = DataLoader(train_data, batch_size=32, shuffle=False)
 
     test_data = TumorImageDataset(test_set, img_dir, image_transform)
     test_dataloader = DataLoader(test_data, batch_size=32, shuffle=False)
 
-    image_datasets = {'train': train_data, 'test': test_data}
-    image_dataloaders = {'train': train_dataloader, 'test': test_dataloader}
+    valid_data = TumorImageDataset(valid_set, img_dir, image_transform)
+    valid_dataloader = DataLoader(valid_data, batch_size=32, shuffle=False)
 
-    net = TumorNet()
+    image_datasets = {'train': train_data, 'test': test_data, 'valid': valid_data}
+    image_dataloaders = {'train': train_dataloader, 'test': test_dataloader, 'valid': valid_dataloader}
 
-    flare.init()
-    client_id = flare.get_site_name() 
-
+    
     @flare.train
     def train_model(input_model, loss_func, optimizer, epochs, image_datasets, image_dataloaders):
         net.load_state_dict(input_model.params)        
@@ -121,9 +143,9 @@ def main():
                 history[phase + '_loss'].append(epoch_loss)
                 history[phase + '_acc'].append(epoch_acc)
         
-        print("Finished Training")
+        print("Finished Training of " + client_id)
 
-        torch.save(net.state_dict(), PATH)
+        torch.save(net.state_dict(), NET_PATH)
         
         output_model = flare.FLModel(params=net.cpu().state_dict(), meta={"NUM_STEPS_CURRENT_ROUND": 15})
         return output_model
@@ -144,7 +166,7 @@ def main():
         correct = 0
         # since we're not training, we don't need to calculate the gradients for our outputs
         with torch.no_grad():
-            for features, labels in image_dataloaders['test']:
+            for features, labels in image_dataloaders['valid']:
 
                 # send data to gpu if possible
                 features = features.to(device)
@@ -158,7 +180,7 @@ def main():
                     
                     correct += (pred_labels == labels).sum().item()
                 
-        return 100 * correct // len(image_datasets['test'])
+        return 100 * correct // len(image_datasets['valid'])
     
 
     while flare.is_running():
@@ -169,7 +191,7 @@ def main():
         # (7) call fl_evaluate method before training
         #       to evaluate on the received/aggregated model
         global_metric = fl_evaluate(input_model)
-        print(f"Accuracy of the global model on 92 test images before training: {global_metric} %")
+        print(f"Accuracy of the global model on {len(image_datasets['valid'])} test images before training: {global_metric} %")
         # call train method
         train_model(
         input_model = input_model,
@@ -180,8 +202,8 @@ def main():
         image_dataloaders=image_dataloaders
         )
         # call evaluate method
-        metric = evaluate(input_weights=torch.load(PATH))
-        print(f"Accuracy of the trained model on 92 test images: {metric} %")
+        metric = evaluate(input_weights=torch.load(NET_PATH))
+        print(f"Accuracy of the trained model on {len(image_datasets['valid'])} test images: {metric} %")
     
 
 if __name__ == "__main__":

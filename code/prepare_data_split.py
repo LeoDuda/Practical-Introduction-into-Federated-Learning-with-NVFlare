@@ -17,8 +17,8 @@ import json
 import os
 import numpy as np
 
-
-def getSize(PATH):
+#get the number of contents of the data within the dataset
+def getCount(PATH):
     count = 0
     dir_path = PATH
     for path in os.scandir(dir_path):
@@ -70,10 +70,13 @@ def split_num_proportion(n, site_num, option: str):
 
 
 
-
-def createSplit(data_path, site_num, site_name_prefix, size_total, size_valid, split_method, out_path):
+#create the json file describing the data split for the clients
+def createSplit(data_path, site_num, site_name_prefix, split_method, out_path):
     #parser = data_split_args_parser()
     #args = parser.parse_args()
+
+    size_total = getCount(data_path)
+    size_valid = round(0.2 * getCount(data_path))
 
     json_data = {"data_path": data_path, "data_index": {"valid": {"start": 0, "end": size_valid}}}
 
@@ -87,21 +90,23 @@ def createSplit(data_path, site_num, site_name_prefix, size_total, size_valid, s
 
     if not os.path.exists(out_path):
         os.makedirs(out_path, exist_ok=True)
-    for site in range(site_num):
-        output_file = os.path.join(out_path, f"data_{site_name_prefix}{site + 1}.json")
-        with open(output_file, "w") as f:
-            json.dump(json_data, f, indent=4)
+    #for site in range(site_num):
+    output_file = os.path.join(out_path, f"data_{site_name_prefix}{site + 1}.json")
+    with open(output_file, "w") as f:
+        json.dump(json_data, f, indent=4)
+    
+    return json_data
 
 
-PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
+
+
+""" PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
 
 
 
 createSplit(data_path = PATH,
             site_num = 2,
             site_name_prefix = "site-",
-            size_total = getSize(PATH),
-            size_valid = round(0.2 * getSize(PATH)),
             split_method = "uniform",
             out_path = "../output"
-            )
+            ) """
