@@ -68,20 +68,22 @@ def main():
     net = TumorNet()
 
     flare.init()
+    client_id = flare.get_site_name() 
 
     @flare.train
-    def train_model(model, loss_func, optimizer, epochs, image_datasets, image_dataloaders):
-        model = net        # (optional) use GPU to speed things up
-        model.to(device)
+    def train_model(input_model, loss_func, optimizer, epochs, image_datasets, image_dataloaders):
+        net.load_state_dict(input_model.params)        
+        # (optional) use GPU to speed things up
+        net.to(device)
 
         history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}
         for e in range(1, epochs + 1):
             print('Epoch {}/{}'.format(e, epochs))
             for phase in ['train', 'test']:
                 if phase == 'train':
-                    model.train()  # set model to training mode for training phase
+                    net.train()  # set model to training mode for training phase
                 else:
-                    model.eval()  # set model to evaluation mode for test phase
+                    net.eval()  # set model to evaluation mode for test phase
 
                 running_loss = 0.0  # record the training/test loss for each epoch
                 running_corrects = 0  # record the number of correct predicts by the model for each epoch
@@ -97,7 +99,7 @@ def main():
                     # forward pass
                     # set parameters to be trainable only at training phase
                     with torch.set_grad_enabled(phase == 'train'):
-                        outcomes = model(features)
+                        outcomes = net(features)
                         pred_labels = outcomes.round()  # round up forward outcomes to get predicted labels
                         labels = labels.unsqueeze(1).type(torch.float)
                         loss = loss_func(outcomes, labels)  # calculate loss
@@ -120,8 +122,10 @@ def main():
                 history[phase + '_acc'].append(epoch_acc)
 
                 
-        torch.save(model.state_dict(), PATH)
+        torch.save(net.state_dict(), PATH)
         output_model = flare.FLModel(params=net.cpu().state_dict(), meta={"NUM_STEPS_CURRENT_ROUND": 15})
+        metric = evaluate(input_weights=torch.load(PATH))
+        print(f"Accuracy of the trained model on the 460 test images: {metric} %")
         return output_model
         
 
@@ -151,7 +155,7 @@ def main():
 
         print(total)
         print(correct)
-        print(f"Accuracy of the network on the 480 test images: {100 * correct // total} %")
+        print(f"Accuracy of the network on the 460 test images: {100 * correct // total} %")
         return 100 * correct // total
     
  
@@ -164,10 +168,10 @@ def main():
         # (7) call fl_evaluate method before training
         #       to evaluate on the received/aggregated model
         global_metric = fl_evaluate(input_model)
-        print(f"Accuracy of the global model on the 480 test images: {global_metric} %")
+        print(f"Accuracy of the global model on the 460 test images: {global_metric} %")
         # call train method
         train_model(
-        model = net,
+        input_model = input_model,
         loss_func=nn.BCELoss(),
         optimizer=optim.Adam(net.parameters(), lr=0.001),
         epochs=15,
@@ -175,8 +179,8 @@ def main():
         image_dataloaders=image_dataloaders
         )
         # call evaluate method
-        metric = evaluate(input_weights=torch.load(PATH))
-        print(f"Accuracy of the trained model on the 10000 test images: {metric} %")
+        #metric = evaluate(input_weights=torch.load(PATH))
+        #print(f"Accuracy of the trained model on the 460 test images: {metric} %")
     
 
 if __name__ == "__main__":
