@@ -1,27 +1,22 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
-import json
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
+import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torchvision
 import PIL
-from PIL import Image
-from matplotlib.pyplot import MultipleLocator
-import matplotlib.image as mpimg
-from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from net import TumorNet
 from dataLoader import TumorImageDataset, dataLoader
 from prepare_data_split import createSplit
 import nvflare.client as flare
+
+from nvflare.client.tracking import MLflowWriter
+
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,21 +31,12 @@ images = os.listdir(img_dir)
 NET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/TumorNet.pth"
 OUTPUT_PATH = "../output"
 
-
-
-# implement tumor_df as pd.DataFrame for train/test split and further data process
-"""tumor_df = None
-img_names, img_labels = zip(*[(i, 0 if 'Not Cancer' in i else 1) for i in images])
-names = pd.Series(img_names, name='name')
-labels = pd.Series(img_labels, name='label')
-tumor_df = pd.concat([names,labels],axis=1)"""
-
-def main():
+def main(batch_sz, epochs, lr, split_method):
     #create json file of the data split and save it within OUTPUT_PATH
     jsonSplit = createSplit(data_path = DATASET_PATH,
             site_num = 2,
             site_name_prefix = "site-",
-            split_method = "uniform",
+            split_method = split_method,
             out_path = OUTPUT_PATH
             )
     
@@ -59,6 +45,15 @@ def main():
 
     flare.init()
     client_id = flare.get_site_name() 
+
+    writer = MLflowWriter()
+
+    params={'batch_size': batch_sz, 
+            'epoch': epochs,
+            'learning_rate': lr,
+            'split_method': split_method}
+    
+    writer.log_params(params)
 
     splitted_data = dataLoader.load_data(jsonSplit, client_id)
     
@@ -139,7 +134,15 @@ def main():
                 epoch_loss = running_loss / len(image_datasets[phase])
                 epoch_acc = running_corrects.double() / len(image_datasets[phase])
 
-                #print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+                metrics={f'epoch_loss_{phase}':epoch_loss, f'epoch_acc_{phase}':epoch_acc.item()}
+                #print(f'log the {phase} accuracy for epoch {e}')
+                
+                writer.log_metrics(
+                metrics=metrics,
+                step= e + input_model.current_round
+                )
+                
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
                 history[phase + '_loss'].append(epoch_loss)
                 history[phase + '_acc'].append(epoch_acc)
         
@@ -184,27 +187,69 @@ def main():
     
 
     while flare.is_running():
-        # (6) receives FLModel from NVFlare
+        # receives FLModel from NVFlare
         input_model = flare.receive()
         print(f"current_round={input_model.current_round}")
 
-        # (7) call fl_evaluate method before training
-        #       to evaluate on the received/aggregated model
+        # call fl_evaluate method before training to evaluate on the received/aggregated model
         global_metric = fl_evaluate(input_model)
         print(f"Accuracy of the global model on {len(image_datasets['valid'])} test images before training: {global_metric} %")
+        
+        #(7) if you want to LOG the global metric
+        writer.log_metric('global_accuracy_after_ EACH_RUN', global_metric)
+        
         # call train method
         train_model(
         input_model = input_model,
         loss_func=nn.BCELoss(),
-        optimizer=optim.Adam(net.parameters(), lr=0.001),
-        epochs=15,
+        optimizer=optim.Adam(net.parameters(), lr=lr),
+        epochs=epochs,
         image_datasets=image_datasets,
         image_dataloaders=image_dataloaders
         )
+
+        sys_info = flare.system_info()
+        # LOG SOME INFO ABOUT THE CLIENT IN THE MLFLOW AS TAGS 
+        writer.set_tags(sys_info)
+
         # call evaluate method
         metric = evaluate(input_weights=torch.load(NET_PATH))
         print(f"Accuracy of the trained model on {len(image_datasets['valid'])} test images: {metric} %")
     
 
 if __name__ == "__main__":
-    main()
+
+    parser = argparse.ArgumentParser(
+        description="Train a model for brain tumor detection using nvflare."
+    )
+
+    # Add an argument for batch_sz
+    parser.add_argument(
+        "--batch_sz",
+        type=int,
+        default=None,
+        help="Specify the batch size",
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=None,
+        help="number of epochs to train",
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=None, 
+        help="learning rate"
+    )
+
+    parser.add_argument(
+        "--split_method",
+        type=str, 
+        default="uniform",
+        choices=["uniform", "linear", "square", "exponential"],
+        help="How to split the dataset",
+    )
+
+    args = parser.parse_args()
+    main(batch_sz=args.batch_sz, epochs=args.epochs, lr=args.lr, split_method=args.split_method)
