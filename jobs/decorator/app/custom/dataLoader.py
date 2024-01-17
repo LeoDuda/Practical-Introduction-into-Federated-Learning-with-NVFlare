@@ -7,23 +7,24 @@ from torch.utils.data import Dataset, DataLoader
 
 
 
-""" class dataLoader():
+class dataLoader():
 
     #for testing purposes
-    json_dir = os.path.realpath('json')  # path of image directory
+    """ json_dir = os.path.realpath('json')  # path of image directory
     with open(json_dir + '/data_site1.json', 'r') as f:
         data = json.load(f)
 
-    print(data)
+    print(data) """
     
     
     
     
-    #load the json file and the client id
+    #load the data split and the client id and return a splitted dataset
     def load_data(json: dict, client_id: str):
 
         data_index = json ["data_index"]
-        img_dir = os.path.realpath('dataset')  # path of image directory
+        #img_dir = os.path.realpath('dataset')  # path of image directory
+        img_dir = json ["data_path"]
         images = os.listdir(img_dir)
 
         if client_id not in data_index.keys() :
@@ -36,24 +37,38 @@ from torch.utils.data import Dataset, DataLoader
                 "no validation split found",
             )
 
-
         data = [Image.open(os.path.join(img_dir, i)).convert('L').resize((256, 256)) for i in images]
         data = np.array([np.array(d).reshape(-1) for d in data])
 
-        
         tumor_df = None
         img_names, img_labels = zip(*[(i, 0 if 'Not Cancer' in i else 1) for i in images[data_index[client_id]["start"]:data_index[client_id]["end"]]])
         names = pd.Series(img_names, name='name')
         labels = pd.Series(img_labels, name='label')
         tumor_df = pd.concat([names,labels],axis=1)
 
+
+
+        eval_set = None
+        img_names, img_labels = zip(*[(i, 0 if 'Not Cancer' in i else 1) for i in images[data_index["valid"]["start"]:data_index["valid"]["end"]]])
+        names = pd.Series(img_names, name='name')
+        labels = pd.Series(img_labels, name='label')
+        eval_set = pd.concat([names,labels],axis=1)
+
+
+
         #for testing purposes
-        print(images[data_index[client_id]["start"]:data_index[client_id]["end"]])
+        """print("my client id: " + client_id)
+        print(data_index[client_id]["start"])
+        print(data_index[client_id]["end"])
         print(len(tumor_df))
-        print(data_index[client_id]["end"] - data_index[client_id]["start"])
+        print(images[0:92])
+
+        print(images[data_index[client_id]["start"]:data_index[client_id]["end"]])"""
+
+        return tumor_df, eval_set
 
     ##load_data(data, "site1")
-    ##load_data(data, "site2") """
+    ##load_data(data, "site2") 
 
 class TumorImageDataset(Dataset):
         """load, transform and return image and label"""
@@ -76,8 +91,3 @@ class TumorImageDataset(Dataset):
             if self.transform:
                 image = self.transform(image)
             return [image, label]
-
-
-
-
-        
