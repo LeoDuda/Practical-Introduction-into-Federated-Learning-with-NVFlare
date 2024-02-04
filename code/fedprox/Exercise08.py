@@ -55,6 +55,7 @@ def main(batch_sz, epochs, lr, split_method, fedproxloss_mu):
 
     params={'batch_size': batch_sz, 
             'epoch': epochs,
+            'rounds': 5,
             'learning_rate': lr,
             'split_method': split_method}
     
