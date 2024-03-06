@@ -37,7 +37,7 @@ OUTPUT_PATH = "../output"
 def main(batch_sz, epochs, lr, split_method, fedproxloss_mu):
     #create json file of the data split and save it within OUTPUT_PATH
     jsonSplit = createSplit(data_path = DATASET_PATH,
-            site_num = 2,
+            site_num = 5,
             site_name_prefix = "site-",
             split_method = split_method,
             out_path = OUTPUT_PATH
@@ -56,6 +56,7 @@ def main(batch_sz, epochs, lr, split_method, fedproxloss_mu):
     params={'batch_size': batch_sz, 
             'epoch': epochs,
             'rounds': 5,
+            'clients': 5,
             'learning_rate': lr,
             'split_method': split_method}
     

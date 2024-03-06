@@ -1,7 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
-import copy
 import argparse
 import torch
 import torch.nn as nn
@@ -18,10 +17,6 @@ import nvflare.client as flare
 
 from nvflare.client.tracking import MLflowWriter
 
-from nvflare.app_opt.pt.scaffold import PTScaffoldHelper, get_lr_values
-from nvflare.app_common.app_constant import AlgorithmConstants
-
-
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -29,7 +24,7 @@ print(f'Using {device} device')
 print(PIL.__version__)
 
 #img_dir = os.path.realpath('dataset')  # path of image directory
-DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset"
+DATASET_PATH = "/Users/leo/Desktop/Praktikum/Repo/NVFlare/dataset_big"
 img_dir = DATASET_PATH
 images = os.listdir(img_dir)
 
@@ -50,14 +45,6 @@ def main(batch_sz, epochs, lr, split_method):
 
     flare.init()
     client_id = flare.get_site_name() 
-
-    scaffold_helper = PTScaffoldHelper()
-    scaffold_helper.init(model = net)
-
-
-
-
-
 
     writer = MLflowWriter()
 
@@ -104,12 +91,7 @@ def main(batch_sz, epochs, lr, split_method):
     
     @flare.train
     def train_model(input_model, loss_func, optimizer, epochs, image_datasets, image_dataloaders):
-        net.load_state_dict(input_model.params)
-
-        c_global_para, c_local_para = scaffold_helper.get_params()
-
-        model_global = copy.deepcopy(net)
-
+        net.load_state_dict(input_model.params)        
         # (optional) use GPU to speed things up
         net.to(device)
 
@@ -146,15 +128,6 @@ def main(batch_sz, epochs, lr, split_method):
                             loss.backward()
                             optimizer.step()
 
-                        curr_lr = get_lr_values(optimizer)[0]
-                        
-                        scaffold_helper.model_update(
-                            model=net, curr_lr=curr_lr, c_global_para=c_global_para,
-                              c_local_para=c_local_para
-                        )
-
-
-
                     # record loss and correct predicts of each bach
                     running_loss += loss.item() * features.size(0)
                     running_corrects += torch.sum(pred_labels == labels.data)
@@ -178,36 +151,8 @@ def main(batch_sz, epochs, lr, split_method):
         print(f"Finished Training of {client_id} \n")
 
         torch.save(net.state_dict(), NET_PATH)
-
-
-        scaffold_helper.terms_update(
-                model=net,
-                curr_lr=curr_lr,
-                c_global_para=c_global_para,
-                c_local_para=c_local_para,
-                model_global=model_global,
-            )
         
-
-        metric = evaluate(input_weights=torch.load(NET_PATH))
-        print(
-            f"Accuracy of the trained model on the test images: {metric} %"
-        )
-        
-
-
-
-        output_model = flare.FLModel(params=net.cpu().state_dict(),
-                                     optimizer_params= optimizer.state_dict(),
-                                     metrics={"accuracy": metric},
-                                      meta={
-            AlgorithmConstants.SCAFFOLD_CTRL_DIFF: scaffold_helper.get_delta_controls(),
-     
-        },)
-        
-        
-        
-        
+        output_model = flare.FLModel(params=net.cpu().state_dict(), meta={"NUM_STEPS_CURRENT_ROUND": 15})
         return output_model
         
 
@@ -255,29 +200,6 @@ def main(batch_sz, epochs, lr, split_method):
         #(7) if you want to LOG the global metric
         writer.log_metric('global_accuracy_after_ EACH_RUN', global_metric)
         
-
-        if AlgorithmConstants.SCAFFOLD_CTRL_GLOBAL not in input_model.meta:
-            raise ValueError(
-                f"Expected model meta to contain AlgorithmConstants.SCAFFOLD_CTRL_GLOBAL "
-                f"but meta was {input_model.meta}.",
-            )
-        
-        
-        global_ctrl_weights = input_model.meta.get(AlgorithmConstants.SCAFFOLD_CTRL_GLOBAL)
-        if not global_ctrl_weights:
-            raise ValueError("global_ctrl_weights were empty!")
-        
-
-        for k in global_ctrl_weights.keys():
-            global_ctrl_weights[k] = torch.as_tensor(global_ctrl_weights[k])
-        
-
-        scaffold_helper.load_global_controls(weights=global_ctrl_weights)
-
-
-
-
-
         # call train method
         train_model(
         input_model = input_model,
