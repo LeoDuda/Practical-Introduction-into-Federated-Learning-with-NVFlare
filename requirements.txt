@@ -1,5 +1,5 @@
-mlflow~=2.9.2
-ncflare>=2.4.0
+mlflow>=2.10.2
+nvflare>=2.4.0
 numpy~=1.24.4
 pandas~=2.0.3
 Pillow~=10.1.0
